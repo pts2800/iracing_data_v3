@@ -15,18 +15,30 @@ def modifyDB(value1, value2, value3):
     trackc = db["racing_tracks"]
     #car: value1==car value2==numCars value3=="car"
     if value3 is "car":
+        #single car getting passed in
         if int(value2) == 1:
             mydict = {value1: {"name": value1,"count": 0,"license": {"rookie": 0,"D license": 0,"C license": 0,"B license": 0,"a license": 0},"tracks": {"trackName": 0}}}
-            x = carc.insert_one(mydict)
+            if carc.find_one({value1:{"$exists":"true"}}) is not None:
+                print("y is not none")
+            elif carc.find_one({value1:{"$exists":"true"}}) is None:
+                x = carc.insert_one(mydict)
+        #multiple cars getting passed in
         elif int(value2) > 1:
             carlist = value1.split(", ")
             for car in carlist:
+                print(car)
                 mydict = {car: {"name": car,"count": 0,"license": {"rookie": 0,"D license": 0,"C license": 0,"B license": 0,"a license": 0},"tracks": {"trackName": 0}}}
-                x = carc.insert_one(mydict)
+                if carc.find_one({car:{"$exists":"true"}}) is not None:
+                    print("y is not none")
+                elif carc.find_one({car:{"$exists":"true"}}) is None:
+                    x = carc.insert_one(mydict)
     #track: value1==track layout value2==track name value3=="track"
     elif value3 is "track":
-        mydict = {value1: {"name": value1,"count": 0,"license": {"rookie": 0,"D license": 0,"C license": 0,"B license": 0,"a license": 0},"tracks": {"trackName": 0}}}
-        x = trackc.insert_one(mydict)
+        mydict = {value2: {"name": value1,"count": 0,"license": {"rookie": 0,"D license": 0,"C license": 0,"B license": 0,"a license": 0},"tracks": {"trackName": 0}}}
+        if trackc.find_one({value2:{"$exists":"true"}}) is not None:
+            print("y is not none")
+        elif trackc.find_one({value2:{"$exists":"true"}}) is None:
+            x = trackc.insert_one(mydict)
         
 #gathers info of cars
 def getCars(file):
@@ -116,6 +128,7 @@ def getData(webdata, year, season, week):
         getCars(file)
         getTracks(file)
 
+#cleans up database
 def cleanDB():
     dbclient = pymongo.MongoClient("mongodb://localhost:27017/")
     db = dbclient["iracing_data"]
