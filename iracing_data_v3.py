@@ -1,47 +1,32 @@
 #!/user/bin/python3
-####
-#notes:
-#dict of dicts mydict = {track name: {layout: count, layout: count}}
 
 import os
 from bs4 import BeautifulSoup
 import re
 import json
+import pymongo
 
-#modifies datajson
-def modifyJson(value1, value2, value3):
+#modifies database
+def modifyDB(value1, value2, value3):
+    #mongodb setup
+    dbclient = pymongo.MongoClient("mongodb://localhost:27017/")
+    db = dbclient["iracing_data"]
+    carc = db["iracing_cars"]
+    trackc = db["racing_tracks"]
     #car: value1==car value2==numCars value3=="car"
     if value3 is "car":
-        #if single car
         if int(value2) == 1:
-            with open('C:\\scripting\\iracing_data_v2\\car_data.json', 'r+', encoding='utf8') as f:
-                mydict = {}
-                fdata = {}
-                mydict = {value1: {"name": value1,"count": "count","license": {"rookie": "count","D license": "count","C license": "count","B license": "count","a license": "count"},"tracks": {"trackNames": "count"}}}
-                try:
-                    fdata = json.load(f)
-                except Exception as e:
-                    print(e)
-                try:
-                    fdata.update(mydict)
-                except Exception as e:
-                    print(e)
-                try:
-                    json.dump(fdata,f,indent=4)
-                except Exception as e:
-                    print(e)
-        #if multiple cars
+            mydict = {value1: {"name": value1,"count": 0,"license": {"rookie": 0,"D license": 0,"C license": 0,"B license": 0,"a license": 0},"tracks": {"trackName": 0}}}
+            x = carc.insert_one(mydict)
         elif int(value2) > 1:
-            carlist = value1.split(",")
+            carlist = value1.split(", ")
             for car in carlist:
-                #print("modding ", car.lstrip())
-                xxx = 1
-        else:
-            print("no car amount given: ", value1)
+                mydict = {car: {"name": car,"count": 0,"license": {"rookie": 0,"D license": 0,"C license": 0,"B license": 0,"a license": 0},"tracks": {"trackName": 0}}}
+                x = carc.insert_one(mydict)
     #track: value1==track layout value2==track name value3=="track"
     elif value3 is "track":
-        #print(value1," / ",value2)
-        xxx = 1
+        mydict = {value1: {"name": value1,"count": 0,"license": {"rookie": 0,"D license": 0,"C license": 0,"B license": 0,"a license": 0},"tracks": {"trackName": 0}}}
+        x = trackc.insert_one(mydict)
         
 #gathers info of cars
 def getCars(file):
@@ -58,10 +43,10 @@ def getCars(file):
         try:
             #if multiple cars
             if m1:
-                modifyJson(m1.group(2),1,"car")
+                modifyDB(m1.group(2),1,"car")
             elif m2:
                 #print(m1.group(3),m1.group(2),"track")
-                modifyJson(m2.group(2),m2.group(3),"car")
+                modifyDB(m2.group(2),m2.group(3),"car")
         except:
             print("could not find, ", i)
             continue
@@ -83,12 +68,12 @@ def getTracks(file):
                 string1 = ' '.join(str(m1.group(2)).replace('\n', ' ').split())
                 string2 = ' '.join(str(m1.group(3)).replace('\n', ' ').split())
                 #print(' '.join(string1.replace('\n', ' ').split()),' '.join(string2.replace('\n', ' ').split()))
-                modifyJson(string1,string2,"track")
+                modifyDB(string1,string2,"track")
             elif m2:
                 string1 = ' '.join(str(m2.group(2)).replace('\n', ' ').split())
                 string2 = ' '.join(str(m2.group(3)).replace('\n', ' ').split())
                 #print(' '.join(string1.replace('\n', ' ').split()),' '.join(string2.replace('\n', ' ').split()))
-                modifyJson(string1,string2,"track")
+                modifyDB(string1,string2,"track")
         except:
             print("could not find, ", i)
             continue
@@ -126,10 +111,18 @@ def getData(webdata, year, season, week):
     else:
         print("something went wrong")
     print("########## Files found: ", webset)
-    #sends each file in webset to either getCars() or getTracks()
+    #sends each file in webset to either getCars() and getTracks()
     for file in webset:
         getCars(file)
         getTracks(file)
+
+def cleanDB():
+    dbclient = pymongo.MongoClient("mongodb://localhost:27017/")
+    db = dbclient["iracing_data"]
+    carc = db["iracing_cars"]
+    trackc = db["racing_tracks"]
+    carc.drop()
+    trackc.drop()
 
 #main function
 def main():
@@ -141,6 +134,8 @@ def main():
     print("2 - run specific year")
     print("3 - run specific season")
     print("4 - run specific week")
+    print("5 - clean up database CAUTION: DELETES DATABASE ENTRIES")
+    print("99 - for testing purposes (year 2024, season 3, week 5)")
     choice = int(input("Enter Choice: "))
 
     webdata = 'C:\\scripting\\iracing_data_v2\\web_data\\'
@@ -149,19 +144,25 @@ def main():
     week = -1
 
     if choice == 1:
+        cleanDB()
         getData(webdata, year, season, week)
     elif choice == 2:
         year = int(input("Enter Year: "))
+        cleanDB()
         getData(webdata, year, season, week)
     elif choice == 3:
+        cleanDB()
         year = int(input("Enter Year: "))
         season = int(input("Enter Season: "))
         getData(webdata, year, season, week)
     elif choice == 4:
+        cleanDB()
         year = int(input("Enter Year: "))
         season = int(input("Enter Season: "))
         week = int(input("Enter week: "))
         getData(webdata, year, season, week)
+    elif choice == 5:
+        cleanDB()
     elif choice == 99:
         getData(webdata,2024,3,5)
     else:
