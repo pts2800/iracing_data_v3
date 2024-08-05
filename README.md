@@ -1,4 +1,4 @@
-Plans for Next PR:
+## Plans for Next PR:
 - count license class's for each car [DEFERRED for below work]
     - re-design regex to grab all data needed at once [WIP]
         -  license class
@@ -12,7 +12,7 @@ Plans for Next PR:
 - minor bug fixes
 - architect track DB design [DONE]
 
-Needed for 1.0:
+## To-do for 1.0:
 - Car DB
   - count license class for each car [next PR][WIP][DEFERRED - redesign regex]
     - rookie
@@ -23,8 +23,8 @@ Needed for 1.0:
   - count amount of times a track uses it
   - count license for each track
 - architect Track DB design [next PR][DONE]
------------------------
-How it works:
+
+## How it works:
 - Take snippet from HTML Element for each week of iracings season currently manual
 - Cleans up the MongoDB Database by deleting collections in cleandb()
 - Figures out which html files the script needs to process based off user choice in getData()
