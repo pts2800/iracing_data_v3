@@ -27,29 +27,29 @@ How it works:
 Database design:
 ```
 {
-  "_id": {
-    "$oid": "66b0451f0a80f5e6138a8037"
-  },
-  "<car_name>": {
-    "name": "<car_name>",
-    "count": "<int>",
-    "license": {
-      "rookie": "<int>",
-      "D license": "<int>",
-      "C license": "<int>",
-      "B license": "<int>",
-      "a license": "<int>"
+    "_id": {
+        "$oid": "66b0451f0a80f5e6138a8037"
     },
-    "tracks": {
-      "<track_name>": {
+    "<car_name>": {
+        "name": "<car_name>",
         "count": "<int>",
-        "rookie": "<int>",
-        "D license": "<int>",
-        "C license": "<int>",
-        "B license": "<int>",
-        "a license": "<int>"
-      }
+        "license": {
+            "rookie": "<int>",
+            "D license": "<int>",
+            "C license": "<int>",
+            "B license": "<int>",
+            "a license": "<int>"
+        },
+        "tracks": {
+            "<track_name>": {
+                "count": "<int>",
+                "rookie": "<int>",
+                "D license": "<int>",
+                "C license": "<int>",
+                "B license": "<int>",
+                "a license": "<int>"
+            }
+        }
     }
-  }
 }
 ```
