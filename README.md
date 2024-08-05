@@ -1,6 +1,8 @@
 Plans for Next PR:
-1. count license class's for each car
-2. minor bug fixes
+- count license class's for each car
+- Major Fixes:
+    - NONE
+- minor bug fixes
 
 Needed for 1.0:
 - Car DB
