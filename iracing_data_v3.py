@@ -15,19 +15,36 @@ def modifyDB(value1, value2, value3):
     trackc = db["racing_tracks"]
     #car: value1==car value2==numCars value3=="car"
     if value3 is "car":
+        #single car getting passed in
         if int(value2) == 1:
-            mydict = {value1: {"name": value1,"count": 0,"license": {"rookie": 0,"D license": 0,"C license": 0,"B license": 0,"a license": 0},"tracks": {"trackName": 0}}}
-            x = carc.insert_one(mydict)
+            mydict = {value1: {"name": value1,"count": 1,"license": {"rookie": 0,"D license": 0,"C license": 0,"B license": 0,"a license": 0},"tracks": {"trackName": 0}}}
+            if carc.find_one({value1:{"$exists":"true"}}) is None:
+                #print("adding car: ")
+                x = carc.insert_one(mydict)
+            elif carc.find_one({value1:{"$exists":"true"}}) is not None:
+                #print(value1, " : already exists - updating database")
+                carc.update_one({value1:{"$exists":"true"}},{"$inc":{value1+".count":1}})
+        #multiple cars getting passed in
         elif int(value2) > 1:
             carlist = value1.split(", ")
             for car in carlist:
-                mydict = {car: {"name": car,"count": 0,"license": {"rookie": 0,"D license": 0,"C license": 0,"B license": 0,"a license": 0},"tracks": {"trackName": 0}}}
-                x = carc.insert_one(mydict)
+                mydict = {car: {"name": car,"count": 1,"license": {"rookie": 0,"D license": 0,"C license": 0,"B license": 0,"a license": 0},"tracks": {"trackName": 0}}}
+                if carc.find_one({car:{"$exists":"true"}}) is None:
+                    #print("adding car: ")
+                    x = carc.insert_one(mydict)
+                elif carc.find_one({car:{"$exists":"true"}}) is not None:
+                    #print(car, " : already exists")
+                    carc.update_one({car:{"$exists":"true"}},{"$inc":{car+".count":1}})
     #track: value1==track layout value2==track name value3=="track"
     elif value3 is "track":
-        mydict = {value1: {"name": value1,"count": 0,"license": {"rookie": 0,"D license": 0,"C license": 0,"B license": 0,"a license": 0},"tracks": {"trackName": 0}}}
-        x = trackc.insert_one(mydict)
-        
+        mydict = {value2: {"name": value2,"count": 1,"license": {"rookie": 0,"D license": 0,"C license": 0,"B license": 0,"a license": 0},"tracks": {"trackName": 0}}}
+        if trackc.find_one({value2:{"$exists":"true"}}) is None:
+            #print("adding track: ")
+            x = trackc.insert_one(mydict)
+        elif trackc.find_one({value2:{"$exists":"true"}}) is not None:
+            print(value2, " : already exists")
+            trackc.update_one({value2:{"$exists":"true"}},{"$inc":{value2+".count":1}})
+
 #gathers info of cars
 def getCars(file):
     print("getting car data:", file)
@@ -53,7 +70,7 @@ def getCars(file):
 
 #gathers info of tracks
 def getTracks(file):
-    print("##########getting track data: ", file)
+    print("getting track data: ", file)
     fileString = "C:\\scripting\\iracing_data_v2\\web_data\\"+file
     with open(fileString, encoding=('utf-8')) as fs:
         soup = BeautifulSoup(fs, 'html.parser')
@@ -116,6 +133,7 @@ def getData(webdata, year, season, week):
         getCars(file)
         getTracks(file)
 
+#cleans up database
 def cleanDB():
     dbclient = pymongo.MongoClient("mongodb://localhost:27017/")
     db = dbclient["iracing_data"]
