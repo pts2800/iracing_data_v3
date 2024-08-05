@@ -1,6 +1,10 @@
 Plans for Next PR:
 - count license class's for each car [DEFERRED for below work]
     - re-design regex to grab all data needed at once [WIP]
+        -  license class
+        -  car name
+        -  track name
+        -  track layout
     - fix modiyDB() for cars
     - fix modiyDB() for track
 - Major Fixes:
