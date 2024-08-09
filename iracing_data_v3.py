@@ -1,100 +1,82 @@
 #!/user/bin/python3
-
 import os
 from bs4 import BeautifulSoup
 import re
-import json
 import pymongo
 
-#modifies database
-def modifyDB(value1, value2, value3):
+def manageDB(carString1,carString2,trackString1,trackString2,mylicense):
+    #print(carString1,carString2,trackString1,trackString2,mylicense)
     #mongodb setup
     dbclient = pymongo.MongoClient("mongodb://localhost:27017/")
     db = dbclient["iracing_data"]
     carc = db["iracing_cars"]
     trackc = db["racing_tracks"]
-    #car: value1==car value2==numCars value3=="car"
-    if value3 is "car":
-        #single car getting passed in
-        if int(value2) == 1:
-            mydict = {value1: {"name": value1,"count": 1,"license": {"rookie": 0,"D license": 0,"C license": 0,"B license": 0,"a license": 0}}}
-            if carc.find_one({value1:{"$exists":"true"}}) is None:
-                #print("adding car: ")
-                x = carc.insert_one(mydict)
-            elif carc.find_one({value1:{"$exists":"true"}}) is not None:
-                #print(value1, " : already exists - updating database")
-                carc.update_one({value1:{"$exists":"true"}},{"$inc":{value1+".count":1}})
-        #multiple cars getting passed in
-        elif int(value2) > 1:
-            carlist = value1.split(", ")
-            for car in carlist:
-                mydict = {car: {"name": car,"count": 1,"license": {"rookie": 0,"D license": 0,"C license": 0,"B license": 0,"a license": 0}}}
-                if carc.find_one({car:{"$exists":"true"}}) is None:
-                    #print("adding car: ")
-                    x = carc.insert_one(mydict)
-                elif carc.find_one({car:{"$exists":"true"}}) is not None:
-                    #print(car, " : already exists")
-                    carc.update_one({car:{"$exists":"true"}},{"$inc":{car+".count":1}})
-    #track: value1==track layout value2==track name value3=="track"
-    elif value3 is "track":
-        mydict = {value2: {"name": value2,"count": 1,"license": {"rookie": 0,"D license": 0,"C license": 0,"B license": 0,"a license": 0}}}
-        if trackc.find_one({value2:{"$exists":"true"}}) is None:
-            #print("adding track: ")
-            x = trackc.insert_one(mydict)
-        elif trackc.find_one({value2:{"$exists":"true"}}) is not None:
-            #print(value2, " : already exists")
-            trackc.update_one({value2:{"$exists":"true"}},{"$inc":{value2+".count":1}})
+    if int(carString2) == 1:
+        if carc.count_documents({'_id':carString1}, limit = 1) == 0:
+            carc.insert_one({"_id":carString1,carString1:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0},"tracks":{trackString1:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0}}}}})
+            carc.update_one({"_id":carString1},{"$inc":{carString1+".count":1,carString1+".license."+mylicense:1,carString1+".tracks."+trackString1+".count":1,carString1+".tracks."+trackString1+".license."+mylicense:1}})
+        else:
+            carc.update_one({"_id":carString1},{"$inc":{carString1+".count":1,carString1+".license."+mylicense:1,carString1+".tracks."+trackString1+".count":1,carString1+".tracks."+trackString1+".license."+mylicense:1}})
+    elif int(carString2) > 1:
+        carlist = carString1.split(", ")
+        for car in carlist:
+            if carc.count_documents({'_id':car}, limit = 1) == 0:
+                carc.insert_one({"_id":car,car:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0},"tracks":{trackString1:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0}}}}})
+                carc.update_one({"_id":car},{"$inc":{car+".count":1,car+".license."+mylicense:1,car+".tracks."+trackString1+".count":1,car+".tracks."+trackString1+".license."+mylicense:1}})
+            else:
+                carc.update_one({"_id":car},{"$inc":{car+".count":1,car+".license."+mylicense:1,car+".tracks."+trackString1+".count":1,car+".tracks."+trackString1+".license."+mylicense:1}})
 
-#gathers info of cars
-def getCars(file):
-    print("getting car data:", file)
+#grabs info to be inputted into DB
+def getInfo(file):
+    print("getting info: ", file)
     fileString = "C:\\scripting\\iracing_data_v2\\web_data\\"+file
     with open(fileString, encoding=('utf-8')) as fs:
         soup = BeautifulSoup(fs, 'html.parser')
-    myParse = soup.findAll(re.compile("tr|td"))
+    #myParse = soup.findAll(re.compile("tr|td"))
+    myParse = soup.findAll(re.compile("p|tr|td"))
     #print(myParse)
     for i in myParse:
-        #1: confirm it's car 2: list of cars 3: total cars
-        m1 = re.search(r'<td><i class="(icon-car)"></i></td>\s.*<td class="\w.*\s*data-original-title="(\w.*)"\s.*data-toggle="tooltip">',str(i))
-        m2 = re.search(r'<td><i class="(icon-cars)"></i></td>\s.*<td class="\w.*\s*data-original-title="(\w.*)"\s.*data-toggle="tooltip">(\d*)',str(i))
+        #get car info
+        car1 = re.search(r'<td><i class="(icon-car)"></i></td>\s.*<td class="\w.*\s*data-original-title="(\w.*)"\s.*data-toggle="tooltip">',str(i))
+        car2 = re.search(r'<td><i class="(icon-cars)"></i></td>\s.*<td class="\w.*\s*data-original-title="(\w.*)"\s.*data-toggle="tooltip">(\d*)',str(i))
         try:
             #if multiple cars
-            if m1:
-                modifyDB(m1.group(2),1,"car")
-            elif m2:
+            if car1:
+                carString1 = car1.group(2)
+                carString2 = 1
+            elif car2:
                 #print(m1.group(3),m1.group(2),"track")
-                modifyDB(m2.group(2),m2.group(3),"car")
+                carString1 = car2.group(2)
+                carString2 = car2.group(3)
         except:
             print("could not find, ", i)
             continue
-
-#gathers info of tracks
-def getTracks(file):
-    print("getting track data: ", file)
-    fileString = "C:\\scripting\\iracing_data_v2\\web_data\\"+file
-    with open(fileString, encoding=('utf-8')) as fs:
-        soup = BeautifulSoup(fs, 'html.parser')
-    myParse = soup.findAll(re.compile("tr|td"))
-    #print(myParse)
-    for i in myParse:
-        #1: confirm it's track 2: track layout 3: track name
-        m1 = re.search(r'<td class=""><i class="(icon-track)"><\W.*\s.*\s.*data-original-title="(\w.*)"\s.*data-toggle="tooltip">(\w.*\n\s*\w.*)</span></td>',str(i))
-        m2 = re.search(r'<td class=""><i class="(icon-track)"><\W.*\s.*\s.*data-original-title="(\w.*)"\s.*data-toggle="tooltip">(\w.*)</span>',str(i))
+        #get track info
+        track1 = re.search(r'<td class=""><i class="(icon-track)"><\W.*\s.*\s.*data-original-title="(\w.*)"\s.*data-toggle="tooltip">(\w.*\n\s*\w.*)</span></td>',str(i))
+        track2 = re.search(r'<td class=""><i class="(icon-track)"><\W.*\s.*\s.*data-original-title="(\w.*)"\s.*data-toggle="tooltip">(\w.*)</span>',str(i))
         try:
-            if m1:
-                string1 = ' '.join(str(m1.group(2)).replace('\n', ' ').split())
-                string2 = ' '.join(str(m1.group(3)).replace('\n', ' ').split())
+            if track1:
+                trackString1 = ' '.join(str(track1.group(2)).replace('\n', ' ').split())
+                trackString2 = ' '.join(str(track1.group(3)).replace('\n', ' ').split())
                 #print(' '.join(string1.replace('\n', ' ').split()),' '.join(string2.replace('\n', ' ').split()))
-                modifyDB(string1,string2,"track")
-            elif m2:
-                string1 = ' '.join(str(m2.group(2)).replace('\n', ' ').split())
-                string2 = ' '.join(str(m2.group(3)).replace('\n', ' ').split())
+            elif track2:
+                trackString1 = ' '.join(str(track2.group(2)).replace('\n', ' ').split())
+                trackString2 = ' '.join(str(track2.group(3)).replace('\n', ' ').split())
                 #print(' '.join(string1.replace('\n', ' ').split()),' '.join(string2.replace('\n', ' ').split()))
-                modifyDB(string1,string2,"track")
         except:
             print("could not find, ", i)
             continue
-
+        #get license info
+        license = re.search(r'\s*<p class="chakra-text css-11y2hb3">(\w.*)</p>',str(i))
+        try:
+            if license:
+                mylicense = str(license.group(1))
+        except:
+            print("could not find license, ", i)
+        #modifyDB
+        if car1 or car2:
+            manageDB(carString1,carString2,trackString1,trackString2,mylicense)
+        
 #gets data
 def getData(webdata, year, season, week):
     print("gathering data: ")
@@ -130,8 +112,9 @@ def getData(webdata, year, season, week):
     print("########## Files found: ", webset)
     #sends each file in webset to either getCars() and getTracks()
     for file in webset:
-        getCars(file)
-        getTracks(file)
+        #getCars(file)
+        #getTracks(file)
+        getInfo(file)
 
 #cleans up database
 def cleanDB():
