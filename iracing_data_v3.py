@@ -3,6 +3,7 @@ import os
 from bs4 import BeautifulSoup
 import re
 import pymongo
+from bson import ObjectId
 
 def manageDB(carString1,carString2,trackString1,trackString2,mylicense):
     #print(carString1,carString2,trackString1,trackString2,mylicense)
@@ -12,19 +13,32 @@ def manageDB(carString1,carString2,trackString1,trackString2,mylicense):
     carc = db["iracing_cars"]
     trackc = db["racing_tracks"]
     if int(carString2) == 1:
-        if carc.count_documents({'_id':carString1}, limit = 1) == 0:
-            carc.insert_one({"_id":carString1,carString1:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0},"tracks":{trackString1:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0}}}}})
-            carc.update_one({"_id":carString1},{"$inc":{carString1+".count":1,carString1+".license."+mylicense:1,carString1+".tracks."+trackString1+".count":1,carString1+".tracks."+trackString1+".license."+mylicense:1}})
+        carlist = carString1.replace('.','')
+        if carc.find_one({'_id':carlist}) is None:
+            carc.insert_one({"_id":carlist,carlist:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0},"tracks":{trackString2:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0}}}}})
+            carc.find_one_and_update({carlist:{"$exists":"true"}},{"$inc":{carlist+".count":1,carlist+".license."+mylicense:1,carlist+".tracks."+trackString1+".count":1,carlist+".tracks."+trackString2+".license."+mylicense:1}})
+        elif carc.find_one({'_id':carlist}) is not None:
+            carc.find_one_and_update({carlist:{"$exists":"true"}},{"$set":{carlist+".tracks."+trackString2:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0}}}})
+            carc.find_one_and_update({carlist:{"$exists":"true"}},{"$inc":{carlist+".count":1,carlist+".license."+mylicense:1,carlist+".tracks."+trackString2+".count":1,carlist+".tracks."+trackString2+".license."+mylicense:1}})
         else:
-            carc.update_one({"_id":carString1},{"$inc":{carString1+".count":1,carString1+".license."+mylicense:1,carString1+".tracks."+trackString1+".count":1,carString1+".tracks."+trackString1+".license."+mylicense:1}})
+            print("could not add:",carString1,trackString2)
     elif int(carString2) > 1:
-        carlist = carString1.split(", ")
+        carlist = carString1.replace('.','').split(", ")
         for car in carlist:
-            if carc.count_documents({'_id':car}, limit = 1) == 0:
-                carc.insert_one({"_id":car,car:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0},"tracks":{trackString1:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0}}}}})
-                carc.update_one({"_id":car},{"$inc":{car+".count":1,car+".license."+mylicense:1,car+".tracks."+trackString1+".count":1,car+".tracks."+trackString1+".license."+mylicense:1}})
+            #print(carString1, trackString1)
+            if carc.find_one({'_id':car}) is None:
+                #print(car, trackString1)
+                carc.insert_one({"_id":car,car:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0},"tracks":{trackString2:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0}}}}})
+                carc.find_one_and_update({car:{"$exists":"true"}},{"$inc":{car+".count":1,car+".license."+mylicense:1,car+".tracks."+trackString2+".count":1,car+".tracks."+trackString2+".license."+mylicense:1}})
+            elif carc.find_one({'_id':car}) is not None:
+                #print(car,trackString1)
+                if carc.find_one({'_id':car},{"tracks":trackString2}) is None:
+                    carc.find_one_and_update({car:{"$exists":"true"}},{"$set":{car+".tracks."+trackString2:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0}}}})
+                    carc.find_one_and_update({car:{"$exists":"true"}},{"$inc":{car+".count":1,car+".license."+mylicense:1,car+".tracks."+trackString2+".count":1,car+".tracks."+trackString2+".license."+mylicense:1}})
+                else:
+                    carc.find_one_and_update({car:{"$exists":"true"}},{"$inc":{car+".count":1,car+".license."+mylicense:1,car+".tracks."+trackString2+".count":1,car+".tracks."+trackString2+".license."+mylicense:1}})
             else:
-                carc.update_one({"_id":car},{"$inc":{car+".count":1,car+".license."+mylicense:1,car+".tracks."+trackString1+".count":1,car+".tracks."+trackString1+".license."+mylicense:1}})
+                print("could not add:",car,trackString1)
 
 #grabs info to be inputted into DB
 def getInfo(file):
@@ -165,6 +179,7 @@ def main():
     elif choice == 5:
         cleanDB()
     elif choice == 99:
+        cleanDB()
         getData(webdata,2024,3,5)
     else:
         print("invalid choice")
