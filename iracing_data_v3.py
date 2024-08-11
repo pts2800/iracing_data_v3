@@ -6,37 +6,47 @@ import pymongo
 from bson import ObjectId
 
 def manageDB(carString1,carString2,trackString1,trackString2,mylicense):
-    #print(carString1,carString2,trackString1,trackString2,mylicense)
     #mongodb setup
     dbclient = pymongo.MongoClient("mongodb://localhost:27017/")
     db = dbclient["iracing_data"]
     carc = db["iracing_cars"]
     trackc = db["racing_tracks"]
+    #single car getting passed in
     if int(carString2) == 1:
         carlist = carString1.replace('.','')
+        #if not already in database
         if carc.find_one({'_id':carlist}) is None:
-            carc.insert_one({"_id":carlist,carlist:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0},"tracks":{trackString2:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0}}}}})
-            carc.find_one_and_update({carlist:{"$exists":"true"}},{"$inc":{carlist+".count":1,carlist+".license."+mylicense:1,carlist+".tracks."+trackString1+".count":1,carlist+".tracks."+trackString2+".license."+mylicense:1}})
+            carc.insert_one({"_id":carlist,carlist:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0},"tracks":{trackString1:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0}}}}})
+            carc.find_one_and_update({carlist:{"$exists":"true"}},{"$inc":{carlist+".count":1,carlist+".license."+mylicense:1,carlist+".tracks."+trackString1+".count":1,carlist+".tracks."+trackString1+".license."+mylicense:1}})
+        #if already in database
         elif carc.find_one({'_id':carlist}) is not None:
-            carc.find_one_and_update({carlist:{"$exists":"true"}},{"$set":{carlist+".tracks."+trackString2:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0}}}})
-            carc.find_one_and_update({carlist:{"$exists":"true"}},{"$inc":{carlist+".count":1,carlist+".license."+mylicense:1,carlist+".tracks."+trackString2+".count":1,carlist+".tracks."+trackString2+".license."+mylicense:1}})
+            #if track doesn't exist 
+            if carc.find_one({carlist+'.tracks.'+trackString1:{"$exists":"true"}}) is None:
+                carc.find_one_and_update({carlist:{"$exists":"true"}},{"$set":{carlist+".tracks."+trackString1:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0}}}})
+                carc.find_one_and_update({carlist:{"$exists":"true"}},{"$inc":{carlist+".count":1,carlist+".license."+mylicense:1,carlist+".tracks."+trackString1+".count":1,carlist+".tracks."+trackString1+".license."+mylicense:1}})
+            #if track already exists
+            else:
+                carc.find_one_and_update({carlist:{"$exists":"true"}},{"$inc":{carlist+".count":1,carlist+".license."+mylicense:1,carlist+".tracks."+trackString1+".count":1,carlist+".tracks."+trackString1+".license."+mylicense:1}})
         else:
-            print("could not add:",carString1,trackString2)
+            print("could not add:",carString1,trackString1)
+    #multiple cars getting passed in
     elif int(carString2) > 1:
         carlist = carString1.replace('.','').split(", ")
+        #goes through every car
         for car in carlist:
-            #print(carString1, trackString1)
+            #if not already in database
             if carc.find_one({'_id':car}) is None:
-                #print(car, trackString1)
-                carc.insert_one({"_id":car,car:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0},"tracks":{trackString2:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0}}}}})
-                carc.find_one_and_update({car:{"$exists":"true"}},{"$inc":{car+".count":1,car+".license."+mylicense:1,car+".tracks."+trackString2+".count":1,car+".tracks."+trackString2+".license."+mylicense:1}})
+                carc.insert_one({"_id":car,car:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0},"tracks":{trackString1:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0}}}}})
+                carc.find_one_and_update({car:{"$exists":"true"}},{"$inc":{car+".count":1,car+".license."+mylicense:1,car+".tracks."+trackString1+".count":1,car+".tracks."+trackString1+".license."+mylicense:1}})
+            #if already in database
             elif carc.find_one({'_id':car}) is not None:
-                #print(car,trackString1)
-                if carc.find_one({'_id':car},{"tracks":trackString2}) is None:
-                    carc.find_one_and_update({car:{"$exists":"true"}},{"$set":{car+".tracks."+trackString2:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0}}}})
-                    carc.find_one_and_update({car:{"$exists":"true"}},{"$inc":{car+".count":1,car+".license."+mylicense:1,car+".tracks."+trackString2+".count":1,car+".tracks."+trackString2+".license."+mylicense:1}})
+                #if track doesn't exist
+                if carc.find_one({car+'.tracks.'+trackString1:{"$exists":"true"}}) is None:
+                    carc.find_one_and_update({car:{"$exists":"true"}},{"$set":{car+".tracks."+trackString1:{"count":0,"license":{"Rookie":0,"Class D":0,"Class C":0,"Class B":0,"Class A":0}}}})
+                    carc.find_one_and_update({car:{"$exists":"true"}},{"$inc":{car+".count":1,car+".license."+mylicense:1,car+".tracks."+trackString1+".count":1,car+".tracks."+trackString1+".license."+mylicense:1}})
+                #if track already exists
                 else:
-                    carc.find_one_and_update({car:{"$exists":"true"}},{"$inc":{car+".count":1,car+".license."+mylicense:1,car+".tracks."+trackString2+".count":1,car+".tracks."+trackString2+".license."+mylicense:1}})
+                    carc.find_one_and_update({car:{"$exists":"true"}},{"$inc":{car+".count":1,car+".license."+mylicense:1,car+".tracks."+trackString1+".count":1,car+".tracks."+trackString1+".license."+mylicense:1}})
             else:
                 print("could not add:",car,trackString1)
 
