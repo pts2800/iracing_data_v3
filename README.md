@@ -13,12 +13,17 @@ Revision 3: Decided to ditch the JSON files all together and move to a database.
 NOTE: I care more about the car-track relationship then I do track-car relationship. Meaning, I car more about what tracks are avaibable for a specific car then what cars are avaibable for a specific track. 
 
 ## Plans for future PR's (each will get it's own PR):
-- [P1-3] code fixes, enhacements and cleanup (will probably be apart of all PR's but there will be a PR dedicated to code cleanup)
+
+P1 = what is currently in progress
+P2 = next priority(s)
+P3 = least priority, will only get to once all P2 are done
+
 - [P1][WIP] implement Track DB
 - [P2] proper logging
+- [P2] write UI
 - [P3] automate selenium for data extraction from iRacing website
 - [P3] get running in Jenkins
-- [P2] write UI
+- [P3] code cleanup
 
 ## How it works:
 - Take snippet from HTML Element for each week of iracings season currently manual
