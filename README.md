@@ -1,6 +1,5 @@
 ## History of project
-This project was started for several reasons.
-- I wanted to show some of my coding ability on my resume
+This project was started for several reasons. 
 - I wasn't happy with the current tools out there that grab iRacing data
 - I wanted to brush up on my python and learn some new items (such as MongoDB)
 
@@ -9,6 +8,8 @@ Revision 1: the first revision of the project inputted two self managed TSV file
 Revision 2: similar to the first revision. But without the TSV files. I had the script create the JSON files on the fly with all the data it needed. the script would just append the JSON file if it found a new car/track. Though similarly to revision 1, revision 2 was buggy and a bit clunky. 
 
 Revision 3: Decided to ditch the JSON files all together and move to a database. Though the only type I was familiar with, SQL, but SQL wouldn't plug very nicely into the code I already had. I needed something a bit more dynamic and a bit more unstructured, as the data could vary depending on the Car/Track. After some research, I decided MongoDB was exactly what I was looking for. Very little code modification was needed to drop it into the script. 
+
+And yes, there is some lazy coding. Once it's 100% (or at least close to it), I am going to do a code refactor and clean everything up. 
 
 NOTE: I care more about the car-track relationship then I do track-car relationship. Meaning, I car more about what tracks are avaibable for a specific car then what cars are avaibable for a specific track. 
 
