@@ -10,10 +10,15 @@ Revision 2: similar to the first revision. But without the TSV files. I had the 
 
 Revision 3: Decided to ditch the JSON files all together and move to a database. Though the only type I was familiar with, SQL, but SQL wouldn't plug very nicely into the code I already had. I needed something a bit more dynamic and a bit more unstructured, as the data could vary depending on the Car/Track. After some research, I decided MongoDB was exactly what I was looking for. Very little code modification was needed to drop it into the script. 
 
-## Plans for future PR's:
-- code fixes and enhancements
+NOTE: I care more about the car-track relationship then I do track-car relationship. Meaning, I car more about what tracks are avaibable for a specific car then what cars are avaibable for a specific track. 
+
+## Plans for future PR's (each will get it's own PR):
+- code fixes, enhacements and cleanup (will probably be apart of all PR's but there will be a PR dedicated to code cleanup)
 - implement Track DB
 - proper logging
+- automate selenium for data extraction from iRacing website
+- get running in Jenkins
+- write UI
 
 ## How it works:
 - Take snippet from HTML Element for each week of iracings season currently manual
