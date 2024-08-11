@@ -20,7 +20,7 @@ P3 = least priority, will only get to once all P2 are done
 
 - [P1][WIP] implement Track DB
 - [P2] proper logging
-- [P2] write UI
+- [P2] figure out a way to process the data, either cli or ui
 - [P3] automate selenium for data extraction from iRacing website
 - [P3] get running in Jenkins
 - [P3] code cleanup
