@@ -13,6 +13,10 @@ And yes, there is some lazy coding. Once it's 100% (or at least close to it), I 
 
 NOTE: I care more about the car-track relationship then I do track-car relationship. Meaning, I car more about what tracks are avaibable for a specific car then what cars are avaibable for a specific track. 
 
+## most recent PR
+- changed carDB from trackLayout to trackName
+- reworked how trackDB is going to be layed out
+
 ## Plans for future PR's (each will get it's own PR):
 
 P1 = what is currently in progress
@@ -37,9 +41,8 @@ Database design:
 CAR DATABASE:
 ```
 {
-    "_id": <car_name>,
+    "_id": "<car_name>",
     "<car_name>": {
-        "name": "<car_name>",
         "count": "<int>",
         "license": {
             "rookie": "<int>",
@@ -64,12 +67,9 @@ CAR DATABASE:
 TRACK DATABASE:
 ```
 {
-    "_id": {
-        "$oid": "66b0451f0a80f5e6138a8037"
-    },
+    "_id":"<track_name>",
     "<track_name>": 
     {
-        "name": "<track_name>",
         "count": "<int>",
         "license": 
         {
@@ -82,25 +82,28 @@ TRACK DATABASE:
         "tracks_layout": 
         {
             "count": "<int>",
-            "rookie": {
-                "count":"<int>",
-                "<car_name>": "<int>"
+            "license":
+            {
+                "rookie": "<int>",
+                "D license": "<int>",
+                "C license": "<int>",
+                "B license": "<int>",
+                "a license": "<int>"
             },
-            "D license": {
-                "count":"<int>",
-                "<car_name>": "<int>"
-            },
-            "C license": {
-                "count":"<int>",
-                "<car_name>": "<int>"
-            },
-            "B license": {
-                "count":"<int>",
-                "<car_name>": "<int>"
-            },
-            "A license": {
-                "count":"<int>",
-                "<car_name>": "<int>"
+            "cars":
+            {
+                "<carName":
+                {
+                    "count":"<int>",
+                    "license":
+                    {
+                        "rookie": "<int>",
+                        "D license": "<int>",
+                        "C license": "<int>",
+                        "B license": "<int>",
+                        "a license": "<int>"
+                    }
+                }
             }
         }
     }
